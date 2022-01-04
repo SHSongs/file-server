@@ -28,8 +28,9 @@ async def create_upload_files(files: List[UploadFile] = File(...)):
     if len(files) == 1:
         file = files[0]
         data = await file.read()
-        print(len(data))
+        print("data 크기", len(data))
         key = generate_key()
+        print("시크릿 키", key)
         file_lst.append({'key': key, 'name': file.filename, 'data': data})
         return "업로드 완료   시크릿 키: " + str(key)
     else:
