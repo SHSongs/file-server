@@ -7,9 +7,10 @@ from fastapi.responses import HTMLResponse, Response
 from fastapi.templating import Jinja2Templates
 
 import random
+import os
 
 app = FastAPI()
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory=os.path.abspath(os.path.expanduser("templates")))
 
 file_lst = []
 
