@@ -58,7 +58,7 @@ async def find_data(request: Request, secret_key: int = Form(...)):
 
     if data:
         try:
-            name = name.encode("latin-1")
+            name.encode("latin-1")
         except:
             print("latin-1으로 변환 실패")
             extension = name.split('.')[-1]
