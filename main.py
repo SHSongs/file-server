@@ -17,8 +17,8 @@ async def create_upload_files(files: List[UploadFile] = File(...)):
     if len(files) == 1:
         file = files[0]
         data = await file.read()
-
-        file_lst.append({'key': 1234, 'data': data})
+        print(len(data))
+        file_lst.append({'key': 1234, 'name': file.filename, 'data': data})
         return "업로드 완료"
     else:
         return HTTPException(status_code=404, detail="아직 여러개의 파일은 올릴 수 없습니다.")
@@ -32,9 +32,11 @@ async def download_file(request: Request):
 @app.post("/find_data")
 async def find_data(request: Request, secret_key: int = Form(...)):
     data = None
+    name = None
     for i in range(len(file_lst)):
         if secret_key == file_lst[i]['key']:
             data = file_lst[i]['data']
+            name = file_lst[i]['name']
             print('파일을 찾았다', secret_key)
 
             del file_lst[i]
@@ -42,7 +44,7 @@ async def find_data(request: Request, secret_key: int = Form(...)):
 
     if data:
         headers = {
-            'Content-Disposition': 'attachment; filename="filename.png"'
+            f'Content-Disposition': f'attachment; filename="{name}"'
         }
         return Response(data, headers=headers)
     else:
