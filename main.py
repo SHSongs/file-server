@@ -2,8 +2,8 @@ import uvicorn
 
 from typing import List
 
-from fastapi import FastAPI, File, UploadFile, HTTPException, Request
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, File, UploadFile, HTTPException, Request, Form
+from fastapi.responses import HTMLResponse, Response
 from fastapi.templating import Jinja2Templates
 
 app = FastAPI()
@@ -29,6 +29,26 @@ async def download_file(request: Request):
     return templates.TemplateResponse("item.html", {"request": request})
 
 
+@app.post("/find_data")
+async def find_data(request: Request, secret_key: int = Form(...)):
+    data = None
+    for i in range(len(file_lst)):
+        if secret_key == file_lst[i]['key']:
+            data = file_lst[i]['data']
+            print('파일을 찾았다', secret_key)
+
+            del file_lst[i]
+            break
+
+    if data:
+        headers = {
+            'Content-Disposition': 'attachment; filename="filename.png"'
+        }
+        return Response(data, headers=headers)
+    else:
+        return HTTPException(status_code=404, detail="파일을 찾을 수 없습니다.")
+
+
 @app.get("/")
 async def main():
     content = """
@@ -41,9 +61,8 @@ async def main():
 <br>
 <br>
 
-<form action="/downloadfile/" method="get">
-<button type="submit">다운로드</button>
-</form>
+<a href="/downloadfile">다운로드</a>
+
 </body>
     """
     return HTMLResponse(content=content)
