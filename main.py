@@ -6,10 +6,21 @@ from fastapi import FastAPI, File, UploadFile, HTTPException, Request, Form
 from fastapi.responses import HTMLResponse, Response
 from fastapi.templating import Jinja2Templates
 
+import random
+
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
 file_lst = []
+
+keys = random.sample(range(10000, 100000), 1000)
+key_num = 0
+
+
+def generate_key():
+    global key_num
+    key_num += 1
+    return keys[key_num]
 
 
 @app.post("/uploadfiles/")
@@ -18,8 +29,9 @@ async def create_upload_files(files: List[UploadFile] = File(...)):
         file = files[0]
         data = await file.read()
         print(len(data))
-        file_lst.append({'key': 1234, 'name': file.filename, 'data': data})
-        return "업로드 완료"
+        key = generate_key()
+        file_lst.append({'key': key, 'name': file.filename, 'data': data})
+        return "업로드 완료   시크릿 키: " + str(key)
     else:
         return HTTPException(status_code=404, detail="아직 여러개의 파일은 올릴 수 없습니다.")
 
