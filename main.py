@@ -46,7 +46,7 @@ async def download_file(request: Request):
 @app.post("/find_data")
 async def find_data(request: Request, secret_key: int = Form(...)):
     data = None
-    name = None
+    name = ""
     for i in range(len(file_lst)):
         if secret_key == file_lst[i]['key']:
             data = file_lst[i]['data']
@@ -57,6 +57,13 @@ async def find_data(request: Request, secret_key: int = Form(...)):
             break
 
     if data:
+        try:
+            name = name.encode("latin-1")
+        except:
+            print("latin-1으로 변환 실패")
+            extension = name.split('.')[-1]
+            name = "file." + extension
+
         headers = {
             f'Content-Disposition': f'attachment; filename="{name}"'
         }
