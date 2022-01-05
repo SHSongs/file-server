@@ -8,24 +8,17 @@ from fastapi.templating import Jinja2Templates
 
 import os
 
+from application import upload_one_file, file_lst
 from util import generate_zip, generate_key
 
 app = FastAPI()
 templates = Jinja2Templates(directory=os.path.abspath(os.path.expanduser("templates")))
 
-file_lst = []
-
 
 @app.post("/uploadfiles/")
 async def create_upload_files(files: List[UploadFile] = File(...)):
     if len(files) == 1:
-        file = files[0]
-        data = await file.read()
-        print("data 크기", len(data))
-
-        key = generate_key()
-        print("시크릿 키", key)
-        file_lst.append({'key': key, 'name': file.filename, 'data': data})
+        key = await upload_one_file(files[0])
         return "업로드 완료   시크릿 키: " + str(key)
     else:
         byte_files = []
