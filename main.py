@@ -6,24 +6,14 @@ from fastapi import FastAPI, File, UploadFile, HTTPException, Request, Form
 from fastapi.responses import HTMLResponse, Response
 from fastapi.templating import Jinja2Templates
 
-import random
 import os
 
-from util import generate_zip
+from util import generate_zip, generate_key
 
 app = FastAPI()
 templates = Jinja2Templates(directory=os.path.abspath(os.path.expanduser("templates")))
 
 file_lst = []
-
-keys = random.sample(range(10000, 100000), 1000)
-key_num = 0
-
-
-def generate_key():
-    global key_num
-    key_num += 1
-    return keys[key_num]
 
 
 @app.post("/uploadfiles/")
