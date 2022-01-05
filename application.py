@@ -3,14 +3,17 @@ from util import generate_key, generate_zip
 file_lst = []
 
 
+def register_file(name, data):
+    key = generate_key()
+    print("시크릿 키", key)
+    file_lst.append({'key': key, 'name': name, 'data': data})
+    return key
+
+
 async def upload_one_file(file):
     data = await file.read()
     print("data 크기", len(data))
-
-    key = generate_key()
-    print("시크릿 키", key)
-    file_lst.append({'key': key, 'name': file.filename, 'data': data})
-
+    key = register_file(file.filename, data)
     return key
 
 
@@ -22,7 +25,5 @@ async def upload_many_file(files):
         print("data 크기", len(data))
 
     file = generate_zip(byte_files)
-    key = generate_key()
-    print("시크릿 키", key)
-    file_lst.append({'key': key, 'name': "file.zip", 'data': file})
+    key = register_file("file.zip", file)
     return key
