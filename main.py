@@ -9,6 +9,8 @@ from fastapi.templating import Jinja2Templates
 import random
 import os
 
+from util import generate_zip
+
 app = FastAPI()
 templates = Jinja2Templates(directory=os.path.abspath(os.path.expanduser("templates")))
 
@@ -30,12 +32,24 @@ async def create_upload_files(files: List[UploadFile] = File(...)):
         file = files[0]
         data = await file.read()
         print("data 크기", len(data))
+
         key = generate_key()
         print("시크릿 키", key)
         file_lst.append({'key': key, 'name': file.filename, 'data': data})
         return "업로드 완료   시크릿 키: " + str(key)
     else:
-        return HTTPException(status_code=404, detail="아직 여러개의 파일은 올릴 수 없습니다.")
+        byte_files = []
+        for file in files:
+            data = await file.read()
+            byte_files.append((file.filename, data))
+            print("data 크기", len(data))
+
+        file = generate_zip(byte_files)
+        key = generate_key()
+        print("시크릿 키", key)
+        file_lst.append({'key': key, 'name': "file.zip", 'data': file})
+
+        return "업로드 완료   시크릿 키: " + str(key)
 
 
 @app.get("/downloadfile", response_class=HTMLResponse)
