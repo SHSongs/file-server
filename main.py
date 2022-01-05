@@ -86,23 +86,9 @@ async def find_data(request: Request, secret_key: int = Form(...)):
         return HTTPException(status_code=404, detail="파일을 찾을 수 없습니다.")
 
 
-@app.get("/")
-async def main():
-    content = """
-<body>
-<form action="/uploadfiles/" enctype="multipart/form-data" method="post">
-<input name="files" type="file" multiple>
-<input type="submit">
-
-<br>
-<br>
-<br>
-
-<a href="/downloadfile">다운로드</a>
-
-</body>
-    """
-    return HTMLResponse(content=content)
+@app.get("/", response_class=HTMLResponse)
+async def main(request: Request):
+    return templates.TemplateResponse("main.html", {"request": request})
 
 
 if __name__ == "__main__":
