@@ -6,48 +6,22 @@ from fastapi import FastAPI, File, UploadFile, HTTPException, Request, Form
 from fastapi.responses import HTMLResponse, Response
 from fastapi.templating import Jinja2Templates
 
-import random
 import os
 
-from util import generate_zip
+from application import upload_one_file, upload_many_file, file_lst
+from util import generate_zip, generate_key
 
 app = FastAPI()
 templates = Jinja2Templates(directory=os.path.abspath(os.path.expanduser("templates")))
-
-file_lst = []
-
-keys = random.sample(range(10000, 100000), 1000)
-key_num = 0
-
-
-def generate_key():
-    global key_num
-    key_num += 1
-    return keys[key_num]
 
 
 @app.post("/uploadfiles/")
 async def create_upload_files(files: List[UploadFile] = File(...)):
     if len(files) == 1:
-        file = files[0]
-        data = await file.read()
-        print("data 크기", len(data))
-
-        key = generate_key()
-        print("시크릿 키", key)
-        file_lst.append({'key': key, 'name': file.filename, 'data': data})
+        key = await upload_one_file(files[0])
         return "업로드 완료   시크릿 키: " + str(key)
     else:
-        byte_files = []
-        for file in files:
-            data = await file.read()
-            byte_files.append((file.filename, data))
-            print("data 크기", len(data))
-
-        file = generate_zip(byte_files)
-        key = generate_key()
-        print("시크릿 키", key)
-        file_lst.append({'key': key, 'name': "file.zip", 'data': file})
+        key = await upload_many_file(files)
 
         return "업로드 완료   시크릿 키: " + str(key)
 
@@ -86,23 +60,9 @@ async def find_data(request: Request, secret_key: int = Form(...)):
         return HTTPException(status_code=404, detail="파일을 찾을 수 없습니다.")
 
 
-@app.get("/")
-async def main():
-    content = """
-<body>
-<form action="/uploadfiles/" enctype="multipart/form-data" method="post">
-<input name="files" type="file" multiple>
-<input type="submit">
-
-<br>
-<br>
-<br>
-
-<a href="/downloadfile">다운로드</a>
-
-</body>
-    """
-    return HTMLResponse(content=content)
+@app.get("/", response_class=HTMLResponse)
+async def main(request: Request):
+    return templates.TemplateResponse("main.html", {"request": request})
 
 
 if __name__ == "__main__":
